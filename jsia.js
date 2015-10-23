@@ -1,6 +1,6 @@
 jsia = (function()
 	{
-	    function jsai()
+	    function jsia()
 	    {
 	    }
 
@@ -11,7 +11,7 @@ jsia = (function()
 		tempCanvas.height = img.height;
 		var tempContext = tempCanvas.getContext('2d');
 		tempContext.drawImage(img, 0, 0);
-		return tempContext.getImageData(0, 0, img.width, img.height).data;
+		return tempContext.getImageData(0, 0, img.width, img.height);
 	    };
 
 	    jsia.indexToXY = function(index, width)
