@@ -58,6 +58,5 @@ jsia = (function()
 		return grey;
 	    };
 
-	    return jsai;
-	}
+	    return jsia;
        }());
