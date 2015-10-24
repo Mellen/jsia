@@ -41,7 +41,7 @@ jsia = (function()
 
 	    jsia.imageDataToGreyScale = function(image, useBrightest)
 	    {
-		var greyData = new UInt8ClampedArray(image.data);
+		var greyData = new Uint8ClampedArray(image.data);
 
 		var grey = new ImageData(greyData, image.width, image.height);
 
@@ -87,7 +87,7 @@ jsia = (function()
 
 	    jsia.imageDataInvertedColour = function(image, invertAlpha)
 	    {
-		var invertedData = new UInt8ClampedArray(image.data);
+		var invertedData = new Uint8ClampedArray(image.data);
 
 		var inverted = new ImageData(data, image.width, image.height);
 
