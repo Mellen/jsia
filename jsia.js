@@ -2,6 +2,14 @@ jsia = (function()
 	{
 	    function jsia()
 	    {
+		this.RED = 0;
+		this.GREEN = 1;
+		this.BLUE = 2;
+		this.ALPHA = 3;
+		this.CYAN = 0;
+		this.MAGENTA = 1;
+		this.YELLOW = 2;
+		this.BLACK = 3;
 	    }
 
 	    jsia.getImageDataFromImg = function(img)
@@ -56,6 +64,41 @@ jsia = (function()
 		}
 
 		return grey;
+	    };
+
+	    jsia.invertPixelColour(pixel, invertAlpha)
+	    {
+		var r = pixel[0];
+		var g = pixel[1];
+		var b = pixel[2];
+		var a = pixel[3];
+		
+		if(invertAlpha)
+		{
+		    return [255 - r, 255 - g, 255 - b, 255 - a];
+		}
+		else
+		{
+		    return [255 - r, 255 - g, 255 - b, a];
+		}
+	    };
+
+	    jsia.imageDataInvertedColour(image, invertAlpha)
+	    {
+		var inverted = new ImageData(image.data, image.width, image.height);
+
+		for(var i = 0; i < inverted.data.length; i += 4)
+		{
+		    inverted.data[i] = 255 - inverted.data[i];
+		    inverted.data[i+1] = 255 - inverted.data[i+1];
+		    inverted.data[i+2] = 255 - inverted.data[i+2];
+		    if(invertAlpha)
+		    {
+			inverted.data[i+3] = 255 - inverted.data[i+3];
+		    }
+		}
+
+		return inverted;
 	    };
 
 	    return jsia;
