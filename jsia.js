@@ -66,7 +66,7 @@ jsia = (function()
 		return grey;
 	    };
 
-	    jsia.invertPixelColour(pixel, invertAlpha)
+	    jsia.invertPixelColour = function(pixel, invertAlpha)
 	    {
 		var r = pixel[0];
 		var g = pixel[1];
@@ -83,7 +83,7 @@ jsia = (function()
 		}
 	    };
 
-	    jsia.imageDataInvertedColour(image, invertAlpha)
+	    jsia.imageDataInvertedColour = function(image, invertAlpha)
 	    {
 		var inverted = new ImageData(image.data, image.width, image.height);
 
