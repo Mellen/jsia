@@ -89,7 +89,7 @@ jsia = (function()
 	    {
 		var invertedData = new Uint8ClampedArray(image.data);
 
-		var inverted = new ImageData(data, image.width, image.height);
+		var inverted = new ImageData(invertedData, image.width, image.height);
 
 		for(var i = 0; i < inverted.data.length; i += 4)
 		{
