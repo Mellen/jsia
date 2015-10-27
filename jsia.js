@@ -68,20 +68,15 @@ jsia = (function()
 		return grey;
 	    };
 
-	    jsia.invertPixelColour = function(pixel, invertAlpha)
+	    jsia.invertPixelColour = function(r, g, b, a, invertAlpha)
 	    {
-		var r = pixel[0];
-		var g = pixel[1];
-		var b = pixel[2];
-		var a = pixel[3];
-		
 		if(invertAlpha)
 		{
-		    return [255 - r, 255 - g, 255 - b, 255 - a];
+		    return {'r':255 - r, 'g':255 - g, 'b':255 - b, 'a':255 - a};
 		}
 		else
 		{
-		    return [255 - r, 255 - g, 255 - b, a];
+		    return {'r':255 - r, 'g':255 - g, 'b':255 - b, 'a':a};
 		}
 	    };
 
