@@ -129,32 +129,33 @@ jsia = (function()
 			var other = jsia.xyToIndex(xy.x-1, xy.y, grey.width);
 			if(Math.abs(grey.data[other] - grey.data[i]) < minimumContrast)
 			{
-			    edges.data[other] = 0;
-			    edges.data[other+1] = 0;
-			    edges.data[other+2] = 0;
+			    edges.data[i] = 0;
+			    edges.data[i+1] = 0;
+			    edges.data[i+2] = 0;
 			}
 			else
 			{
-			    edges.data[other] = 255;
-			    edges.data[other+1] = 255;
-			    edges.data[other+2] = 255;
+			    edges.data[i] = 255;
+			    edges.data[i+1] = 255;
+			    edges.data[i+2] = 255;
+			    continue;
 			}
 		    }
 
 		    if(xy.y > 0)
 		    {
 			var other = jsia.xyToIndex(xy.x-1, xy.y, grey.width);
-			if(Math.abs(grey.data[other] - grey.data[i]) < minimumContrast)
+			if(Math.abs(grey.data[i] - grey.data[other]) < minimumContrast)
 			{
-			    edges.data[other] = 0;
-			    edges.data[other+1] = 0;
-			    edges.data[other+2] = 0;
+			    edges.data[i] = 0;
+			    edges.data[i+1] = 0;
+			    edges.data[i+2] = 0;
 			}
 			else
 			{
-			    edges.data[other] = 255;
-			    edges.data[other+1] = 255;
-			    edges.data[other+2] = 255;
+			    edges.data[i] = 255;
+			    edges.data[i+1] = 255;
+			    edges.data[i+2] = 255;
 			}
 		    }
 		}
