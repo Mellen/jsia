@@ -100,5 +100,67 @@ jsia = (function()
 		return inverted;
 	    };
 
+	    jsia.getAveragePixelChannelValue = function(image, channel)
+	    {
+		var sum = 0;
+		var count = 0;
+
+		for(var i = 0; i < image.data.length; i += 4)
+		{
+		    sum += image.data[i + channel];
+		    count++;
+		}
+
+		return sum/count;
+	    };
+
+	    jsia.detectEdgePixels = function(image, minimumContrast)
+	    {
+		var edgesData = new Uint8ClampedArray(image.data);
+		var edges = new ImageData(edgesData, image.width, image.height);
+		
+		var grey = jsia.imageDataToGreyScale(image, true);
+
+		for(var i = 0; i < grey.data.length; i += 4)
+		{
+		    var xy = jsia.indexToXY(i, grey.width);
+		    if(xy.x > 0)
+		    {
+			var other = jsia.xyToIndex(xy.x-1, xy.y, grey.width);
+			if(Math.abs(grey.data[other] - grey.data[i]) < minimumContrast)
+			{
+			    edges.data[other] = 0;
+			    edges.data[other+1] = 0;
+			    edges.data[other+2] = 0;
+			}
+			else
+			{
+			    edges.data[other] = 255;
+			    edges.data[other+1] = 255;
+			    edges.data[other+2] = 255;
+			}
+		    }
+
+		    if(xy.y > 0)
+		    {
+			var other = jsia.xyToIndex(xy.x-1, xy.y, grey.width);
+			if(Math.abs(grey.data[other] - grey.data[i]) < minimumContrast)
+			{
+			    edges.data[other] = 0;
+			    edges.data[other+1] = 0;
+			    edges.data[other+2] = 0;
+			}
+			else
+			{
+			    edges.data[other] = 255;
+			    edges.data[other+1] = 255;
+			    edges.data[other+2] = 255;
+			}
+		    }
+		}
+
+		return edges;
+	    };
+
 	    return jsia;
        }());
