@@ -160,7 +160,7 @@ jsia = (function()
 			}
 		    }
 
-		    if(x.y.y > 0 && xy.x > 0)
+		    if(xy.y > 0 && xy.x > 0)
 		    {
 			var other = jsia.xyToIndex(xy.x-1, xy.y-1, grey.width);
 			if(Math.abs(grey.data[i] - grey.data[other]) < minimumContrast)
