@@ -22,6 +22,42 @@ jsia = (function()
 		return tempContext.getImageData(0, 0, img.width, img.height);
 	    };
 
+	    jsia.setupVideoCallback = function(videoElement, callback, timeBetweenFrames)
+	    {
+		var localMediaStream = null;
+
+		navigator.getUserMedia = ( navigator.getUserMedia ||
+					   navigator.webkitGetUserMedia ||
+					   navigator.mozGetUserMedia ||
+					   navigator.msGetUserMedia);
+
+		if(navigator.getUserMedia)
+		{
+		    var um = navigator.getUserMedia({video: true}, handleVid, vidErr);
+		}
+
+		function handleVid(stream)
+		{
+		    videoElement.src = window.URL.createObjectURL(stream);
+		    localMediaStream = stream;
+		}
+		
+		function vidErr(e)
+		{
+		    alert(e);
+		}
+
+		function capture()
+		{
+		    if(localMediaStream)
+		    {
+			callback();
+		    }
+		}
+
+		setInterval(capture, timeBetweenFrames);
+	    }
+
 	    jsia.indexToXY = function(index, width)
 	    {
 		var point = {x:0, y:0};
@@ -180,6 +216,12 @@ jsia = (function()
 
 		return edges;
 	    };
+
+	    jsia.lineDetection = function(imageData, minimumContrast, minimumLineLength, tollerance)
+	    {
+		var edges = jsia.detectEdgePixels(imageData, minimumContrast);
+		
+	    }
 
 	    return jsia;
        }());
