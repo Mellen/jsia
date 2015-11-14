@@ -159,11 +159,6 @@ jsia = (function()
 
 		for(var i = 0; i < grey.data.length; i += 4)
 		{
-		    edges.data[i] = 0;
-		    edges.data[i+1] = 0;
-		    edges.data[i+2] = 0;
-		    edges.data[i+3] = 255;
-
 		    var xy = jsia.indexToXY(i, grey.width);
 		    if(xy.x > 0)
 		    {
@@ -185,7 +180,7 @@ jsia = (function()
 
 		    if(xy.y > 0)
 		    {
-			var other = jsia.xyToIndex(xy.x-1, xy.y, grey.width);
+			var other = jsia.xyToIndex(xy.x, xy.y-1, grey.width);
 			if(Math.abs(grey.data[i] - grey.data[other]) < minimumContrast)
 			{
 			    edges.data[i] = 0;
