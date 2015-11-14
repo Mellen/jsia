@@ -159,6 +159,11 @@ jsia = (function()
 
 		for(var i = 0; i < grey.data.length; i += 4)
 		{
+		    edges.data[i] = 0;
+		    edges.data[i+1] = 0;
+		    edges.data[i+2] = 0;
+		    edges.data[i+3] = 255;
+
 		    var xy = jsia.indexToXY(i, grey.width);
 		    if(xy.x > 0)
 		    {
