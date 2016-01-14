@@ -220,7 +220,34 @@ jsia = (function()
 	    jsia.lineDetection = function(imageData, minimumContrast, minimumLineLength, tollerance)
 	    {
 		var edges = jsia.detectEdgePixels(imageData, minimumContrast);
+
+		var lines = [];
 		
+		for(var index = 0; index < edges.length; index++)
+		{
+		    if(edges[index] == 255)
+		    {
+			var newLine = findLine(edges, index, tollerance);
+			var dx = (newLine.start.x - newLine.end.x) * (newLine.start.x - newLine.end.x);
+			var dy = (newLine.start.y - newLine.end.y) * (newLine.start.y - newLine.end.y)
+			if(Math.sqrt(dx + dy) > minimumLineLength)
+			{
+			    lines.push(newLine);
+			}
+		    }
+		}
+		
+		return lines;
+	    }
+
+	    function findLine(edges, index, tollerance)
+	    {
+		var start =  jsia.indexToXY(index, edges.width);
+		var end = start;
+
+		
+
+		return {start:start, end:end};
 	    }
 
 	    return jsia;
