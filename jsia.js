@@ -1,5 +1,9 @@
 jsia = (function()
 	{
+	    var RIGHT = 0;
+	    var DOWN = 1;
+	    var RIGHTDOWN = 2;	
+	    
 	    function jsia()
 	    {
 		this.RED = 0;
@@ -221,34 +225,148 @@ jsia = (function()
 	    {
 		var edges = jsia.detectEdgePixels(imageData, minimumContrast);
 
-		var lines = [];
+		var completelines = [];
+		var usedPoints = [];
 		
 		for(var index = 0; index < edges.length; index++)
 		{
-		    if(edges[index] == 255)
+		    if((edges.data[index] === 255) && (usedPoints.indexOf(index) === -1))
 		    {
-			var newLine = findLine(edges, index, tollerance);
-			var dx = (newLine.start.x - newLine.end.x) * (newLine.start.x - newLine.end.x);
-			var dy = (newLine.start.y - newLine.end.y) * (newLine.start.y - newLine.end.y)
-			if(Math.sqrt(dx + dy) > minimumLineLength)
+			var result = findLines(edges, index, tollerance);
+
+			var newLines = result.lines;
+
+			for(var upi = 0; upi < result.usedPoints.length; upi++)
 			{
-			    lines.push(newLine);
+			    usedPoints.push(result.usedPoints[upi]);
+			}
+			
+			for(var nli = 0; nli < newLines.length; nli++)
+			{
+			    completelines.push(newLines[nli]);
 			}
 		    }
 		}
-		
+
+		for(var i = 0; i < completelines.length; i++)
+		{
+		    var newLine = completelines[i];
+		    var dx = (newLine.start.x - newLine.end.x) * (newLine.start.x - newLine.end.x);
+		    var dy = (newLine.start.y - newLine.end.y) * (newLine.start.y - newLine.end.y)
+		    if(Math.sqrt(dx + dy) > minimumLineLength)
+		    {
+			lines.push(newLine);
+		    }
+		}
+	    
 		return lines;
 	    }
 
-	    function findLine(edges, index, tollerance)
+	    function findLines(edges, index, tollerance)
 	    {
+		lines = [];
+		usedPoints = [];
+
 		var start =  jsia.indexToXY(index, edges.width);
-		var end = start;
+		var dir = -1;
 
+		var nextSteps = generateNextSteps(start, edges, tollerance);
+
+		for(var i = 0; i < nextSteps.length; i++)
+		{
+		    var index = jsia.xyToIndex(nextSteps[i].x, nextSteps[i].y, edges.width)
+		    usedPoints.push(index);
+		}		
+
+		if(nextSteps.length > 0)
+		{
+		    while(nextSteps.length > 0)
+		    {
+			var step = nextSteps.pop();
+			var moreSteps = generateNextSteps(step, edges, tollerance);
+			if(moreSteps.length === 0)
+			{
+			    var lines.push({start:start, end:step});
+			}
+			else
+			{
+			    for(var i = 0; i < moreSteps.length; i++)
+			    {
+				var index = jsia.xyToIndex(moreSteps[i].x, moreSteps[i].y, edges.width)
+				usedPoints.push(index);
+				nextSteps.push(moreSteps[i]);
+			    }
+			}
+		    }
+		}
+		else
+		{
+		    lines = [{start:start, end:start}];
+		}
 		
-
-		return {start:start, end:end};
+		return {lines:lines, userPoints:usedPoints};
 	    }
 
+	    function generateNextSteps(point, edges, tollerance)
+	    {
+		var nextPoints = []
+
+		var right = null;
+		var down = null;
+		var rightdown = null;
+		var leftdown = null;
+		
+		for(var i = 1; i <= tollerance; i++)
+		{
+		    var pointIndex = jsia.xyToIndex(point.x+i, point.y, edges.width);
+		    if(edges.data[pointIndex] == 255)
+		    {
+			
+			right = {x: point.x + i, y: point.y};
+		    }
+		    
+		    pointIndex = jsia.xyToIndex(point.x, point.y+i, edges.width);
+		    if(edges.data[pointIndex] == 255)
+		    {
+			down = {x: point.x, y: point.y+1};
+		    }
+		    
+		    pointIndex = jsia.xyToIndex(point.x+i, point.y+i, edges.width);
+		    if(edges.data[pointIndex] == 255)
+		    {
+			rightdown = {x: point.x+1, y: point.y+1};
+		    }
+
+		    pointIndex = jsia.xyToIndex(point.x-i, point.y+i, edges.width);
+		    if(edges.data[pointIndex] == 255)
+		    {
+			leftdown = {x: point.x-1, y: point.y+1};
+		    }		    
+
+		}
+
+		if(right !== null)
+		{
+		    nextPoints.push(right);
+		}
+
+		if(down !== null)
+		{
+		    nextPoints.push(down);
+		}
+
+		if(rightdown !== null)
+		{
+		    nextPoints.push(rightdown);
+		}
+
+		if(leftdown !== null)
+		{
+		    nextPoints.push(leftdown);
+		}
+
+		return nextPoints;
+	    }
+	    	    
 	    return jsia;
        }());
