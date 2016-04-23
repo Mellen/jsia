@@ -229,7 +229,7 @@ jsia = (function()
 		var usedPoints = [];
 		var lines = [];
 		
-		for(var index = 0; index < edges.length; index++)
+		for(var index = 0; index < edges.data.length; index++)
 		{
 		    if((edges.data[index] === 255) && (usedPoints.indexOf(index) === -1))
 		    {
@@ -321,8 +321,7 @@ jsia = (function()
 		{
 		    var pointIndex = jsia.xyToIndex(point.x+i, point.y, edges.width);
 		    if(edges.data[pointIndex] == 255)
-		    {
-			
+		    {			
 			right = {x: point.x + i, y: point.y};
 		    }
 		    
