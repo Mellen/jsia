@@ -264,8 +264,8 @@ jsia = (function()
 
 	    function findLines(edges, index, tollerance)
 	    {
-		lines = [];
-		usedPoints = [];
+		var lines = [];
+		var usedPoints = [];
 
 		var start =  jsia.indexToXY(index, edges.width);
 		var dir = -1;
@@ -286,7 +286,7 @@ jsia = (function()
 			var moreSteps = generateNextSteps(step, edges, tollerance);
 			if(moreSteps.length === 0)
 			{
-			    var lines.push({start:start, end:step});
+			    lines.push({start:start, end:step});
 			}
 			else
 			{
