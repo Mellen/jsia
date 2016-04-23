@@ -227,6 +227,7 @@ jsia = (function()
 
 		var completelines = [];
 		var usedPoints = [];
+		var lines = [];
 		
 		for(var index = 0; index < edges.length; index++)
 		{
