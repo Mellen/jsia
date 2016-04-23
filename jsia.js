@@ -305,7 +305,7 @@ jsia = (function()
 		    lines = [{start:start, end:start}];
 		}
 		
-		return {lines:lines, userPoints:usedPoints};
+		return {lines:lines, usedPoints:usedPoints};
 	    }
 
 	    function generateNextSteps(point, edges, tollerance)
