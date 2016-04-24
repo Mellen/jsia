@@ -237,7 +237,7 @@ jsia = (function()
 		    var chunk = new Uint8Array(chunkwidth*chunkheight);
 		    for(var h = 0; h < chunkportion; h++)
 		    {
-			var start = jsia.indexToXY((chunkwidth*w + chunkheight*h)*4, edges.width);
+			var start = jsia.indexToXY((chunkwidth*w + (chunkheight*h * edges.width))*4, edges.width);
 
 			var index = 0;
 			for(var x = start.x; x < start.x + chunkwidth; x++)
@@ -248,8 +248,8 @@ jsia = (function()
 				index++;
 			    }
 			}
+			chunks.push(chunk);
 		    }
-		    chunks.push(chunk);
 		}
 
 		for(var i = 0; i < chunks.length; i++)
@@ -264,7 +264,34 @@ jsia = (function()
 			}
 		    }
 
-		    console.log(chunkpoints.length);
+		    var chunklines = [];
+		    var chunkpoint = chunkpoints.pop();
+		    while(chunkpoints.length > 0)
+		    {
+			for(var j = 0; j < chunkpoints.length; j++)
+			{
+			    var dx = chunkpoint.x - chunkpoints[j].x;
+			    var dy = chunkpoint.y - chunkpoints[j].y;
+			    var slope = 0;
+			    if(dx === 0)
+			    {
+				slope = dy;
+			    }
+			    else if(dy === 0)
+			    {
+				slope = dx;
+			    }
+			    else
+			    {
+				slope = dy/dx;
+			    }
+			    
+			    var length = Math.sqrt((dy*dy)+(dx*dx));
+			    chunklines.push({start:chunkpoint, end:chunkpoints[j], slope:slope, length:length});
+			}
+			chunkpoint = chunkpoints.pop();
+		    }
+		    console.log(chunklines.length);
 		}
 
 		
