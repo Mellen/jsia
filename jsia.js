@@ -224,56 +224,52 @@ jsia = (function()
 	    jsia.lineDetection = function(imageData, minimumContrast, minimumLineLength, tollerance)
 	    {
 		var edges = jsia.detectEdgePixels(imageData, minimumContrast);
+		var chunkportion = 8;
+		var chunkwidth = Math.floor(edges.width/chunkportion);
+		var chunkheight = Math.floor(edges.height/chunkportion);		
+
 		var lines = [];
 
-		var allPoints = [];
-
-		for(var i = 0; i < edges.data.length; i+=4)
+		var chunks = [];
+		
+		for(var w = 0; w < chunkportion; w++)
 		{
-		    if(edges.data[i] === 255)
+		    var chunk = new Uint8Array(chunkwidth*chunkheight);
+		    for(var h = 0; h < chunkportion; h++)
 		    {
-			allPoints.push(jsia.indexToXY(i, edges.width));
+			var start = jsia.indexToXY((chunkwidth*w + chunkheight*h)*4, edges.width);
+
+			var index = 0;
+			for(var x = start.x; x < start.x + chunkwidth; x++)
+			{
+			    for(var y = start.y; y < start.y + chunkheight; y++)
+			    {
+				chunk[index] = edges.data[jsia.xyToIndex(x, y, edges.width)];
+				index++;
+			    }
+			}
 		    }
+		    chunks.push(chunk);
 		}
 
-		var allLines = buildAllLines(allPoints);
+		for(var i = 0; i < chunks.length; i++)
+		{
+		    var chunkpoints = [];
+		    var chunk = chunks[i];
+		    for(var pixel = 0; pixel < chunk.length; pixel++)
+		    {
+			if(chunk[pixel] === 255)
+			{
+			    chunkpoints.push(jsia.indexToXY(pixel, chunkwidth));
+			}
+		    }
 
-		console.log(allPoints.length);
-		
-		//find the furthest point from the selected point
-		//figure out the slope
-		//count the number of points under the line
-		//do this by finding points that are connected to both
-		//the start and end points with the same slope
-		//if the ratio of points to possible points
-		//is greater than the tollerance then store the line
+		    console.log(chunkpoints.length);
+		}
+
 		
 		return lines;
 	    };
-
-	    function buildAllLines(points)
-	    {
-		var lines = [];
-
-		var curPoint = points.pop();
-
-		while(points.length > 0)
-		{
-		    for(var i = 0; i < points.length; i++)
-		    {
-			var end = points[i];
-			var dx = curPoint.x - end.x;
-			var dy = curPoint.y - end.y;
-			var slope = dy/dx;
-			var length = Math.sqrt((dy*dy)+(dx*dx));
-			var line = {start:curPoint, end: end, slope: slope, length: length};
-			lines.push(line);
-		    }
-		    curPoint = points.pop();
-		}
-		
-		return lines;
-	    }
 	    	    
 	    return jsia;
        }());
