@@ -224,148 +224,55 @@ jsia = (function()
 	    jsia.lineDetection = function(imageData, minimumContrast, minimumLineLength, tollerance)
 	    {
 		var edges = jsia.detectEdgePixels(imageData, minimumContrast);
-
-		var completelines = [];
-		var usedPoints = [];
 		var lines = [];
+
+		var allPoints = [];
+
+		for(var i = 0; i < edges.data.length; i+=4)
+		{
+		    if(edges.data[i] === 255)
+		    {
+			allPoints.push(jsia.indexToXY(i, edges.width));
+		    }
+		}
+
+		var allLines = buildAllLines(allPoints);
+
+		console.log(allPoints.length);
 		
-		for(var index = 0; index < edges.data.length; index++)
-		{
-		    if((edges.data[index] === 255) && (usedPoints.indexOf(index) === -1))
-		    {
-			var result = findLines(edges, index, tollerance);
-
-			var newLines = result.lines;
-
-			for(var upi = 0; upi < result.usedPoints.length; upi++)
-			{
-			    usedPoints.push(result.usedPoints[upi]);
-			}
-			
-			for(var nli = 0; nli < newLines.length; nli++)
-			{
-			    completelines.push(newLines[nli]);
-			}
-		    }
-		}
-
-		for(var i = 0; i < completelines.length; i++)
-		{
-		    var newLine = completelines[i];
-		    var dx = (newLine.start.x - newLine.end.x) * (newLine.start.x - newLine.end.x);
-		    var dy = (newLine.start.y - newLine.end.y) * (newLine.start.y - newLine.end.y)
-		    if(Math.sqrt(dx + dy) > minimumLineLength)
-		    {
-			lines.push(newLine);
-		    }
-		}
-	    
+		//find the furthest point from the selected point
+		//figure out the slope
+		//count the number of points under the line
+		//do this by finding points that are connected to both
+		//the start and end points with the same slope
+		//if the ratio of points to possible points
+		//is greater than the tollerance then store the line
+		
 		return lines;
-	    }
+	    };
 
-	    function findLines(edges, index, tollerance)
+	    function buildAllLines(points)
 	    {
 		var lines = [];
-		var usedPoints = [];
 
-		var start =  jsia.indexToXY(index, edges.width);
-		var dir = -1;
+		var curPoint = points.pop();
 
-		var nextSteps = generateNextSteps(start, edges, tollerance);
-
-		for(var i = 0; i < nextSteps.length; i++)
+		while(points.length > 0)
 		{
-		    var index = jsia.xyToIndex(nextSteps[i].x, nextSteps[i].y, edges.width)
-		    usedPoints.push(index);
-		}		
-
-		if(nextSteps.length > 0)
-		{
-		    while(nextSteps.length > 0)
+		    for(var i = 0; i < points.length; i++)
 		    {
-			var step = nextSteps.pop();
-			var moreSteps = generateNextSteps(step, edges, tollerance);
-			if(moreSteps.length === 0)
-			{
-			    lines.push({start:start, end:step});
-			}
-			else
-			{
-			    for(var i = 0; i < moreSteps.length; i++)
-			    {
-				var index = jsia.xyToIndex(moreSteps[i].x, moreSteps[i].y, edges.width)
-				usedPoints.push(index);
-				nextSteps.push(moreSteps[i]);
-			    }
-			}
+			var end = points[i];
+			var dx = curPoint.x - end.x;
+			var dy = curPoint.y - end.y;
+			var slope = dy/dx;
+			var length = Math.sqrt((dy*dy)+(dx*dx));
+			var line = {start:curPoint, end: end, slope: slope, length: length};
+			lines.push(line);
 		    }
-		}
-		else
-		{
-		    lines = [{start:start, end:start}];
+		    curPoint = points.pop();
 		}
 		
-		return {lines:lines, usedPoints:usedPoints};
-	    }
-
-	    function generateNextSteps(point, edges, tollerance)
-	    {
-		var nextPoints = []
-
-		var right = null;
-		var down = null;
-		var rightdown = null;
-		var leftdown = null;
-		
-		for(var i = 1; i <= tollerance; i++)
-		{
-		    var pointIndex = jsia.xyToIndex(point.x+i, point.y, edges.width);
-		    if(edges.data[pointIndex] == 255)
-		    {			
-			right = {x: point.x + i, y: point.y};
-		    }
-		    
-		    pointIndex = jsia.xyToIndex(point.x, point.y+i, edges.width);
-		    if(edges.data[pointIndex] == 255)
-		    {
-			down = {x: point.x, y: point.y+1};
-		    }
-		    
-		    pointIndex = jsia.xyToIndex(point.x+i, point.y+i, edges.width);
-		    if(edges.data[pointIndex] == 255)
-		    {
-			rightdown = {x: point.x+1, y: point.y+1};
-		    }
-
-		    pointIndex = jsia.xyToIndex(point.x-i, point.y+i, edges.width);
-		    if(edges.data[pointIndex] == 255)
-		    {
-			leftdown = {x: point.x-1, y: point.y+1};
-		    }		    
-
-		}
-
-		if(right !== null)
-		{
-		    nextPoints.push(right);
-		}
-
-		if(down !== null)
-		{
-		    nextPoints.push(down);
-		}
-
-		if(rightdown !== null)
-		{
-		    nextPoints.push(rightdown);
-		}
-
-		if(leftdown !== null)
-		{
-		    nextPoints.push(leftdown);
-		}
-
-		return nextPoints;
+		return lines;
 	    }
 	    	    
 	    return jsia;
