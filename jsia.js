@@ -1,9 +1,5 @@
 jsia = (function()
 	{
-	    var RIGHT = 0;
-	    var DOWN = 1;
-	    var RIGHTDOWN = 2;	
-	    
 	    function jsia()
 	    {
 		this.RED = 0;
@@ -275,11 +271,11 @@ jsia = (function()
 			    var slope = 0;
 			    if(dx === 0)
 			    {
-				slope = dy;
+				slope = Infinity;
 			    }
 			    else if(dy === 0)
 			    {
-				slope = dx;
+				slope = 0;
 			    }
 			    else
 			    {
@@ -291,9 +287,87 @@ jsia = (function()
 			}
 			chunkpoint = chunkpoints.pop();
 		    }
-		    console.log(chunklines.length);
+
+		    chunklines.sort(function(a, b)
+				    {
+					if(a.start.x > b.start.x)
+					{
+					    return 1;
+					}
+					
+					if(a.start.y > b.start.y)
+					{
+					    return 1;
+					}
+					
+					if(a.start.x < b.start.x)
+					{
+					    return -1;
+					}
+					
+					if(a.start.y < b.start.y)
+					{
+					    return -1;
+					}
+
+					if(a.length > b.length)
+					{
+					    return 1;
+					}
+
+					if(a.length < b.length)
+					{
+					    return -1;
+					}
+
+					return 0;
+				    });
+		    
+		    var curline = chunklines.pop();
+		    while(chunklines.length > 0)
+		    {
+			var nextLine = chunklines.find(function(line){ return curline.end.x === line.start.x && curline.end.y === line.start.y && curline.slope === line.slope});
+			var length = curline.length;
+			
+			if(nextLine)
+			{
+			    var potentialLine = [];
+			    var realLine = [];
+
+			    while(nextline)
+			    {
+				potentialLine.push(nextLine);
+				length += nextLine.length;
+				if(potentialLine.length / length >= tollerance)
+				{
+				    realLine.push(nextLine);
+				}
+				else
+				{
+				    break;
+				}
+				nextLine = chunklines.find(function(line){ return nextLine.end.x === line.start.x && nextLine.end.y === line.start.y && nextLine.slope === line.slope});
+			    }
+
+			    if(realLine.length > 0)
+			    {
+				var end = realLine[realLine.length - 1];
+				var line = {start: curline.start, end: end.end, length: length, slope: curline.slope};
+				lines.push(line);
+				for(var l = 0; l < realLine.length; l++)
+				{
+				    var remLine = realLine[l];
+				    var index = chunklines.indexOf(remLine);
+				    chunklines.splice(index, 1);
+				}
+			    }
+			}			
+			
+			curline = chunklines.pop();
+		    }
 		}
 
+		console.log(lines.length);
 		
 		return lines;
 	    };
