@@ -334,7 +334,7 @@ jsia = (function()
 			    var potentialLine = [];
 			    var realLine = [];
 
-			    while(nextline)
+			    while(nextLine)
 			    {
 				potentialLine.push(nextLine);
 				length += nextLine.length;
