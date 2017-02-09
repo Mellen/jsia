@@ -217,157 +217,55 @@ jsia = (function()
 		return edges;
 	    };
 
+	    jsia.rgbHistograms = function(imageData)
+	    {
+		var red = Array(255).fill(0);
+		var green = Array(255).fill(0);
+		var blue = Array(255).fill(0);
+
+		for(var i = 0; i < imageData.data.length; i+=4)
+		{
+		    red[imageData.data[i]]++;
+		    green[imageData.data[i+1]]++;
+		    blue[imageData.data[i+2]]++;
+		}
+		
+		return {red:red, green:green, blue:blue};
+	    }
+
 	    jsia.lineDetection = function(imageData, minimumContrast, minimumLineLength, tollerance)
 	    {
 		var edges = jsia.detectEdgePixels(imageData, minimumContrast);
-		var chunkportion = 8;
-		var chunkwidth = Math.floor(edges.width/chunkportion);
-		var chunkheight = Math.floor(edges.height/chunkportion);		
 
-		var lines = [];
-
-		var chunks = [];
+		lines = [];
 		
-		for(var w = 0; w < chunkportion; w++)
+		var width = imageData.width;
+		var height = imageData.height;
+		var data = edges.data;
+
+		var whiteCount = 0;
+
+		var columns = 4;
+		var rows = 2;
+		
+		var chunkWidth = width/columns;
+		var chunkHeight = height/rows;
+
+		for(var col = 0; col < columns; col++)
 		{
-		    var chunk = new Uint8Array(chunkwidth*chunkheight);
-		    for(var h = 0; h < chunkportion; h++)
+		    var xStart = col * chunkWidth;
+		    for(var row = 0; row < rows; row++)
 		    {
-			var start = jsia.indexToXY((chunkwidth*w + (chunkheight*h * edges.width))*4, edges.width);
+			var yStart = row * chunkHeight;
 
-			var index = 0;
-			for(var x = start.x; x < start.x + chunkwidth; x++)
-			{
-			    for(var y = start.y; y < start.y + chunkheight; y++)
-			    {
-				chunk[index] = edges.data[jsia.xyToIndex(x, y, edges.width)];
-				index++;
-			    }
-			}
-			chunks.push(chunk);
-		    }
-		}
+			var indexStart = this.xyToIndex(xStart, yStart, width);
 
-		for(var i = 0; i < chunks.length; i++)
-		{
-		    var chunkpoints = [];
-		    var chunk = chunks[i];
-		    for(var pixel = 0; pixel < chunk.length; pixel++)
-		    {
-			if(chunk[pixel] === 255)
+			for(var i = 0; i < 100; i++)
 			{
-			    chunkpoints.push(jsia.indexToXY(pixel, chunkwidth));
-			}
-		    }
-
-		    var chunklines = [];
-		    var chunkpoint = chunkpoints.pop();
-		    while(chunkpoints.length > 0)
-		    {
-			for(var j = 0; j < chunkpoints.length; j++)
-			{
-			    var dx = chunkpoint.x - chunkpoints[j].x;
-			    var dy = chunkpoint.y - chunkpoints[j].y;
-			    var slope = 0;
-			    if(dx === 0)
-			    {
-				slope = Infinity;
-			    }
-			    else if(dy === 0)
-			    {
-				slope = 0;
-			    }
-			    else
-			    {
-				slope = dy/dx;
-			    }
 			    
-			    var length = Math.sqrt((dy*dy)+(dx*dx));
-			    chunklines.push({start:chunkpoint, end:chunkpoints[j], slope:slope, length:length});
 			}
-			chunkpoint = chunkpoints.pop();
-		    }
-
-		    chunklines.sort(function(a, b)
-				    {
-					if(a.start.x > b.start.x)
-					{
-					    return 1;
-					}
-					
-					if(a.start.y > b.start.y)
-					{
-					    return 1;
-					}
-					
-					if(a.start.x < b.start.x)
-					{
-					    return -1;
-					}
-					
-					if(a.start.y < b.start.y)
-					{
-					    return -1;
-					}
-
-					if(a.length > b.length)
-					{
-					    return 1;
-					}
-
-					if(a.length < b.length)
-					{
-					    return -1;
-					}
-
-					return 0;
-				    });
-		    
-		    var curline = chunklines.pop();
-		    while(chunklines.length > 0)
-		    {
-			var nextLine = chunklines.find(function(line){ return curline.end.x === line.start.x && curline.end.y === line.start.y && curline.slope === line.slope});
-			var length = curline.length;
-			
-			if(nextLine)
-			{
-			    var potentialLine = [];
-			    var realLine = [];
-
-			    while(nextLine)
-			    {
-				potentialLine.push(nextLine);
-				length += nextLine.length;
-				if(potentialLine.length / length >= tollerance)
-				{
-				    realLine.push(nextLine);
-				}
-				else
-				{
-				    break;
-				}
-				nextLine = chunklines.find(function(line){ return nextLine.end.x === line.start.x && nextLine.end.y === line.start.y && nextLine.slope === line.slope});
-			    }
-
-			    if(realLine.length > 0)
-			    {
-				var end = realLine[realLine.length - 1];
-				var line = {start: curline.start, end: end.end, length: length, slope: curline.slope};
-				lines.push(line);
-				for(var l = 0; l < realLine.length; l++)
-				{
-				    var remLine = realLine[l];
-				    var index = chunklines.indexOf(remLine);
-				    chunklines.splice(index, 1);
-				}
-			    }
-			}			
-			
-			curline = chunklines.pop();
 		    }
 		}
-
-		console.log(lines.length);
 		
 		return lines;
 	    };
