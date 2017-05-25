@@ -22,7 +22,7 @@ jsia = (function()
 		return tempContext.getImageData(0, 0, img.width, img.height);
 	    };
 
-	    jsia.setupVideoCallback = function(videoElement, callback, timeBetweenFrames)
+	    jsia.setupVideoCallback = function(videoElement, callbackCapture, callbackError, timeBetweenFrames)
 	    {
 		var localMediaStream = null;
 
@@ -31,9 +31,11 @@ jsia = (function()
 					   navigator.mozGetUserMedia ||
 					   navigator.msGetUserMedia);
 
-		if(navigator.getUserMedia)
+		var um = navigator.mediaDevices.getUserMedia({video: true}).then(handleVid).catch(vidErr);
+		
+		if(!um)
 		{
-		    var um = navigator.getUserMedia({video: true}, handleVid, vidErr);
+		    um = navigator.getUserMedia({video: true}, handleVid, vidErr);
 		}
 
 		function handleVid(stream)
@@ -44,14 +46,14 @@ jsia = (function()
 		
 		function vidErr(e)
 		{
-		    alert(e);
+		    callbackError(e)
 		}
 
 		function capture()
 		{
 		    if(localMediaStream)
 		    {
-			callback();
+			callbackCapture();
 		    }
 		}
 
