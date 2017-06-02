@@ -239,38 +239,156 @@ jsia = (function()
 	    {
 		var edges = jsia.detectEdgePixels(imageData, minimumContrast);
 
-		lines = [];
-		
-		var width = imageData.width;
-		var height = imageData.height;
-		var data = edges.data;
+		var lines = [];
 
-		var whiteCount = 0;
+		var points = getAllEdgePoints(edges);
+		var tollerablePairs = getTollerablePairs(points, tollerance);
 
-		var columns = 4;
-		var rows = 2;
-		
-		var chunkWidth = width/columns;
-		var chunkHeight = height/rows;
-
-		for(var col = 0; col < columns; col++)
+		while(points.length > 0)
 		{
-		    var xStart = col * chunkWidth;
-		    for(var row = 0; row < rows; row++)
+		    var point = points.pop();
+		    var lineSet = generateLineSet(point, tollerablePairs);
+		    if(lines.length > 0)
 		    {
-			var yStart = row * chunkHeight;
-
-			var indexStart = this.xyToIndex(xStart, yStart, width);
-
-			for(var i = 0; i < 100; i++)
-			{
-			    
-			}
+			lines.concat(lineSet);
+		    }
+		    else
+		    {
+			lines.push(lineSet);
 		    }
 		}
 		
 		return lines;
 	    };
+
+	    function generateLineSet(start, tollerablePairs)
+	    {
+		var lines = [];
+		var nears = [];
+
+		for(var i = tollerablePairs.length - 1; i >= 0; i--)
+		{
+		    var pair = tollerablePairs[i];
+
+		    if(pair.a === start || pair.b === start)
+		    {
+			nears.push(i);
+			tollerablePairs.splice(i, 1);
+		    }
+		}
+
+		for(var i = 0; i < nears.length; i++)
+		{
+		    var nextPoint = nears[i].a;
+
+		    if(nextPoint === start)
+		    {
+			nextPoint = nears[i].b;
+		    }
+
+		    var line = getPairsWithTheSameSlope(nextPoint, nears[i].slope, tollerablePairs);
+		    line.unshift(nears[i]);
+		    lines.push(line);
+		}
+
+		return lines;
+	    }
+
+	    function getPairsWithTheSameSlope(start, slope, tollerablePairs)
+	    {
+		var nexts = [];
+		
+		for(var i = tollerablePairs.length - 1; i >= 0; i--)
+		{
+		    var pair = tollerablePairs[i];
+
+		    if((pair.a === start || pair.b === start) && pair.slope == slope)
+		    {
+			nexts.push(pair);
+			tollerablePairs.splice(i, 1);
+		    }
+		}
+
+		var line = [];
+
+		for(var i = 0; i < nexts.length; i++)
+		{
+		    var nextPoint = nexts[i].a;
+
+		    if(nextPoint === start)
+		    {
+			nextPoint = nexts[i].b;
+		    }
+
+		    var line = getPairsWithTheSameSlope(nextPoint, nexts[i].slope, tollerablePairs);
+		    line.unshift(nears[i]);
+		}
+
+		return line;
+	    }
+
+	    function getTollerablePairs(points, tollerance)
+	    {
+		var pairs = [];
+
+		while(points.length > 0)
+		{
+		    var start = points.pop();
+		    for(var i = 0; i < points.length; i++)
+		    {
+			var otherPoint = points[i];
+
+			var distance = getDistance(start, otherPoint);
+
+			if(distance <= tollerance)
+			{
+			    var pair = {a: start, b: otherPoint, slope:getSlope(start, otherPoint), distance:distance};
+			    pairs.push(pair);
+			}
+		    }
+		}
+		return pairs;
+	    }
+
+	    function getSlope(pointA, pointB)
+	    {
+		var a = pointA;
+		var b = pointB;
+
+		if(a.x < b.x)
+		{
+		    a = b;
+		    b = pointA;
+		}
+
+		return (a.y - b.y)/(a.x - b.x);
+	    }
+
+	    function getDistance(pointA, pointB)
+	    {
+		var x = pointA.x - pointB.x;
+		var y = pointA.y - pointB.y;
+
+		var x2 = x*x;
+		var y2 = y*y;
+
+		return Math.sqrt(x2 + y2);
+	    }
+
+	    function getAllEdgePoints(edges)
+	    {
+		var points = [];
+
+		for(var i = 0; i < edges.data.length; i += 4)
+		{
+		    if(edges.data[i] > 0)
+		    {
+			points.push(jsia.indexToXY(i, edges.width));
+		    }
+		}
+		
+		return points;
+	    }
 	    	    
 	    return jsia;
        }());
