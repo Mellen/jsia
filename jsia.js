@@ -212,8 +212,46 @@ jsia = (function()
 			    edges.data[i] = 255;
 			    edges.data[i+1] = 255;
 			    edges.data[i+2] = 255;
-			}			
+			}
+			continue
 		    }
+
+		    if(i == 0)
+		    {
+			var other = 4
+			var hit = false;
+			if(Math.abs(grey.data[i] - grey.data[other]) < minimumContrast)
+			{
+			    edges.data[i] = 0;
+			    edges.data[i+1] = 0;
+			    edges.data[i+2] = 0;
+			}
+			else
+			{
+			    edges.data[i] = 255;
+			    edges.data[i+1] = 255;
+			    edges.data[i+2] = 255;
+			    hit = true;
+			}
+
+			if(!hit)
+			{
+			    var other = grey.width*4;
+			    if(Math.abs(grey.data[i] - grey.data[other]) < minimumContrast)
+			    {
+				edges.data[i] = 0;
+				edges.data[i+1] = 0;
+				edges.data[i+2] = 0;
+			    }
+			    else
+			    {
+				edges.data[i] = 255;
+				edges.data[i+1] = 255;
+				edges.data[i+2] = 255;
+			    }
+			}
+		    }
+
 		}
 
 		return edges;
@@ -235,144 +273,98 @@ jsia = (function()
 		return {red:red, green:green, blue:blue};
 	    }
 
-	    jsia.lineDetection = function(imageData, minimumContrast, minimumLineLength, tollerance)
+	    jsia.lineDetection = function(imageData, minimumContrast, minimumLineLength, tolerance)
 	    {
 		var edges = jsia.detectEdgePixels(imageData, minimumContrast);
 
 		var lines = [];
 
 		var points = getAllEdgePoints(edges);
-		var tollerablePairs = getTollerablePairs(points, tollerance);
+		
+		points.sort((a, b) => { if (a.x < b.x) return 1; else if (a.x > b.x) return -1; else return 0;})
 
-		while(points.length > 0)
+		var right = points[0];
+		var left = points[points.length - 1];
+
+		points.sort((a, b) => { if (a.y < b.y) return 1; else if (a.y > b.y) return -1; else return 0;})
+
+		var bottom = points[0];
+		var top = points[points.length - 1];
+
+		var tempCanvas = document.createElement('canvas');
+		tempCanvas.width = edges.width;
+		tempCanvas.height = edges.height;
+		var tempContext = tempCanvas.getContext('2d');
+		tempContext.putImageData(edges, 0, 0);		
+		
+		var areaOfInterest = tempContext.getImageData(left.x, top.y, right.x - left.x, bottom.y - top.y);
+
+		tempCanvas.width = areaOfInterest.width;
+		tempCanvas.height = areaOfInterest.height;
+
+		tempContext = tempCanvas.getContext('2d');
+
+		tempContext.putImageData(areaOfInterest, 0, 0);
+
+		var currentEnds = []
+		
+		for(let y = 0; y < areaOfInterest.height; y += minimumLineLength)
 		{
-		    var point = points.pop();
-		    var lineSet = generateLineSet(point, tollerablePairs);
-		    if(lines.length > 0)
+		    for(let x = 0; x < areaOfInterest.width; x += minimumLineLength)
 		    {
-			lines.concat(lineSet);
-		    }
-		    else
-		    {
-			lines.push(lineSet);
+			let square = tempContext.getImageData(x, y, minimumLineLength, minimumLineLength);
+			let points = getAllEdgePoints(square);
+			if(points.length == 0)
+			    continue;
+			points.forEach(point =>
+			{
+			    let lineExtended = false;
+			    currentEnds.forEach(end =>
+			    {
+				let end = currentEnds[e];
+				let d = euclideanDistance(point, end.point);
+				if(d <= tolerance)
+				{
+				    lineExtended = true;
+				    lines[end.index].push(point);
+				    end.point = point;
+				}
+			    });
+			    if(!lineExtended)
+			    {
+				lines.push([point]);
+				let newEnd = {point: point, index:lines.length-1};
+				currentEnds.push(newEnd);
+			    }
+			});
 		    }
 		}
+
+		// find all the lines that are too short and remove them
+		var removeables = []
 		
+		lines.forEach((line, index) =>
+		{
+		    if(line.length < minimumLineLength)
+		    {
+			removeables.push(index);
+		    }
+		});
+
+		removeables = removeables.sort((a, b) => {if(a < b) return 1; if(b < a) return -1; return 0;});
+
+		removeables.forEach(i => lines.splice(i, 1));
+
 		return lines;
 	    };
 
-	    function generateLineSet(start, tollerablePairs)
+
+	    function euclideanDistance(pointA, pointB)
 	    {
-		var lines = [];
-		var nears = [];
+		var xd = pointA.x - pointB.x;
+		var yd = pointA.y - pointA.y;
 
-		for(var i = tollerablePairs.length - 1; i >= 0; i--)
-		{
-		    var pair = tollerablePairs[i];
-
-		    if(pair.a === start || pair.b === start)
-		    {
-			nears.push(i);
-			tollerablePairs.splice(i, 1);
-		    }
-		}
-
-		for(var i = 0; i < nears.length; i++)
-		{
-		    var nextPoint = nears[i].a;
-
-		    if(nextPoint === start)
-		    {
-			nextPoint = nears[i].b;
-		    }
-
-		    var line = getPairsWithTheSameSlope(nextPoint, nears[i].slope, tollerablePairs);
-		    line.unshift(nears[i]);
-		    lines.push(line);
-		}
-
-		return lines;
-	    }
-
-	    function getPairsWithTheSameSlope(start, slope, tollerablePairs)
-	    {
-		var nexts = [];
-		
-		for(var i = tollerablePairs.length - 1; i >= 0; i--)
-		{
-		    var pair = tollerablePairs[i];
-
-		    if((pair.a === start || pair.b === start) && pair.slope == slope)
-		    {
-			nexts.push(pair);
-			tollerablePairs.splice(i, 1);
-		    }
-		}
-
-		var line = [];
-
-		for(var i = 0; i < nexts.length; i++)
-		{
-		    var nextPoint = nexts[i].a;
-
-		    if(nextPoint === start)
-		    {
-			nextPoint = nexts[i].b;
-		    }
-
-		    var line = getPairsWithTheSameSlope(nextPoint, nexts[i].slope, tollerablePairs);
-		    line.unshift(nears[i]);
-		}
-
-		return line;
-	    }
-
-	    function getTollerablePairs(points, tollerance)
-	    {
-		var pairs = [];
-
-		while(points.length > 0)
-		{
-		    var start = points.pop();
-		    for(var i = 0; i < points.length; i++)
-		    {
-			var otherPoint = points[i];
-
-			var distance = getDistance(start, otherPoint);
-
-			if(distance <= tollerance)
-			{
-			    var pair = {a: start, b: otherPoint, slope:getSlope(start, otherPoint), distance:distance};
-			    pairs.push(pair);
-			}
-		    }
-		}
-		return pairs;
-	    }
-
-	    function getSlope(pointA, pointB)
-	    {
-		var a = pointA;
-		var b = pointB;
-
-		if(a.x < b.x)
-		{
-		    a = b;
-		    b = pointA;
-		}
-
-		return (a.y - b.y)/(a.x - b.x);
-	    }
-
-	    function getDistance(pointA, pointB)
-	    {
-		var x = pointA.x - pointB.x;
-		var y = pointA.y - pointB.y;
-
-		var x2 = x*x;
-		var y2 = y*y;
-
-		return Math.sqrt(x2 + y2);
+		return math.sqrt(xd*xd + yd*yd);
 	    }
 
 	    function getAllEdgePoints(edges)
