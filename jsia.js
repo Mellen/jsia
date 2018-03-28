@@ -363,7 +363,7 @@ jsia = (function()
 		var xd = pointA.x - pointB.x;
 		var yd = pointA.y - pointA.y;
 
-		return math.sqrt(xd*xd + yd*yd);
+		return Math.sqrt(xd*xd + yd*yd);
 	    }
 
 	    function getAllEdgePoints(edges)
