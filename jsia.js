@@ -362,7 +362,7 @@ jsia = (function()
 	    function euclideanDistance(pointA, pointB)
 	    {
 		var xd = pointA.x - pointB.x;
-		var yd = pointA.y - pointA.y;
+		var yd = pointA.y - pointB.y;
 
 		return Math.sqrt(xd*xd + yd*yd);
 	    }
