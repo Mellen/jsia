@@ -314,7 +314,7 @@ jsia = (function()
 		    {
 			let square = tempContext.getImageData(x, y, minimumLineLength, minimumLineLength);
 			let points = getAllEdgePoints(square);
-			points = points.map(function(p){ return { x: p.x + x*minimumLineLength, y: p.y + y*minimumLineLength }; });
+			points = points.map(function(p){ return { x: p.x + x, y: p.y + y }; });
 			if(points.length == 0)
 			    continue;
 			points.forEach(point =>
