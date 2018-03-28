@@ -321,7 +321,6 @@ jsia = (function()
 			    let lineExtended = false;
 			    currentEnds.forEach(end =>
 			    {
-				let end = currentEnds[e];
 				let d = euclideanDistance(point, end.point);
 				if(d <= tolerance)
 				{
