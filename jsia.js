@@ -327,7 +327,20 @@ jsia = (function()
 				{
 				    lineExtended = true;
 				    lines[end.index].push(point);
-				    end.point = point;
+				    let changeEnd = false;
+				    if(point.x > end.point.x)
+				    {
+					changeEnd = true;
+				    }
+				    else if(point.x == end.point.x && point.y > end.point.y)
+				    {
+					changeEnd = true;
+				    }
+
+				    if(changeEnd)
+				    {
+					end.point = point;
+				    }
 				}
 			    });
 			    if(!lineExtended)
