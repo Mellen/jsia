@@ -332,7 +332,7 @@ jsia = (function()
 				    {
 					changeEnd = true;
 				    }
-				    else if(point.x == end.point.x && point.y > end.point.y)
+				    else if(point.x == end.point.x && point.y != end.point.y)
 				    {
 					changeEnd = true;
 				    }
