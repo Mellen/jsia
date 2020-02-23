@@ -40,7 +40,7 @@ jsia = (function()
 
 		function handleVid(stream)
 		{
-		    videoElement.src = window.URL.createObjectURL(stream);
+		    videoElement.srcObject = stream;
 		    localMediaStream = stream;
 		}
 		
