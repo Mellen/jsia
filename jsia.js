@@ -278,44 +278,28 @@ jsia = (function()
 		let edges = jsia.detectEdgePixels(imageData, minimumContrast);
 
 		let points = getAllEdgePoints(edges);
-
-		points.sort((a, b) =>
-                            {
-                                if (a.x < b.x)
-                                    return 1;
-                                else if (a.x > b.x)
-                                    return -1;
-                                else if (a.y < b.y)
-                                    return 1;
-                                else if(a.y > b.y)
-                                    return -1;
-                                else
-                                    return 0;
-                            });
-
+                
                 let lines = [];
-
-                for(let point of points)
+                let line = [];
+                lines.push(line);
+                
+                while(points.length > 0)
                 {
-                    let line;
-                    if(lines.length === 0)
+                    let currentPoint = points.pop();
+                    line.push(currentPoint);
+                    let closePoints = points.filter(point => euclideanDistance(point, currentPoint) <= 2);
+                    while(closePoints.length > 0)
                     {
-                        line = [point];
-                        lines.push(line);
-                    }
-                    else
-                    {
-                        line = lines[lines.length-1];
-                        let lastPoint = line[line.length-1];
-                        if(euclideanDistance(point, lastPoint) <= 2)
+                        let nextClosePoints = [];
+                        for(let point in closePoints)
                         {
                             line.push(point);
+                            let pi = points.indexOf(point);
+                            points.splice(pi, 1);
+                            nextClosePoints = nextClosePoints.concat(points.filter(point2 => euclideanDistance(point2, point) <= 2));
                         }
-                        else
-                        {
-                            line = [point];
-                            lines.push(line);
-                        }
+
+                        closePoints = nextClosePoints;
                     }
                 }
 
