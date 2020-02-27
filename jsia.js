@@ -280,11 +280,11 @@ jsia = (function()
 		let points = getAllEdgePoints(edges);
                 
                 let lines = [];
-                let line = [];
-                lines.push(line);
                 
                 while(points.length > 0)
                 {
+                    let line = [];
+                    lines.push(line);
                     let currentPoint = points.pop();
                     line.push(currentPoint);
                     let closePoints = points.filter(point => euclideanDistance(point, currentPoint) <= 2);
