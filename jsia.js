@@ -287,7 +287,7 @@ jsia = (function()
                     lines.push(line);
                     let currentPoint = points.pop();
                     line.push(currentPoint);
-                    let closePoints = points.filter(point => euclideanDistance(point, currentPoint) <= 2);
+                    let closePoints = points.filter(point => euclideanDistance(point, currentPoint) <= tolerance);
                     while(closePoints.length > 0)
                     {
                         for(let point of closePoints)
@@ -297,7 +297,7 @@ jsia = (function()
                             points.splice(pi, 1);
                         }
 
-                        closePoints = points.filter(point => closePoints.filter(point2 => euclideanDistance(point2, point) <= 2).length > 0);
+                        closePoints = points.filter(point => closePoints.filter(point2 => euclideanDistance(point2, point) <= tolerance).length > 0);
                     }
                     
                     line.sort((a,b) =>
