@@ -326,19 +326,7 @@ jsia = (function()
                               });
                 }
 
-		var removeables = []
-		
-		lines.forEach((line, index) =>
-		{
-		    if(line.length < minimumLineLength)
-		    {
-			removeables.push(index);
-		    }
-		});
-
-		removeables = removeables.sort((a, b) => {if(a < b) return 1; if(b < a) return -1; return 0;});
-
-		removeables.forEach(i => lines.splice(i, 1));
+                lines = lines.filter(line => line.length >= minimumLineLength);
 
                 return lines;
 	    };
