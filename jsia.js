@@ -290,7 +290,7 @@ jsia = (function()
                     let closePoints = points.filter(point => euclideanDistance(point, currentPoint) <= 2);
                     while(closePoints.length > 0)
                     {
-                        for(let point in closePoints)
+                        for(let point of closePoints)
                         {
                             line.push(point);
                             let pi = points.indexOf(point);
@@ -299,8 +299,31 @@ jsia = (function()
 
                         closePoints = points.filter(point => closePoints.filter(point2 => euclideanDistance(point2, point) <= 2).length > 0);
                     }
+                    
+                    line.sort((a,b) =>
+                              {
+                                  if(a.y > b.y)
+                                  {
+                                      return 1;
+                                  }
 
-                    console.log(line);
+                                  if(a.y < b.y)
+                                  {
+                                      return -1;
+                                  }
+
+                                  if(a.x > b.x)
+                                  {
+                                      return 1;
+                                  }
+
+                                  if(a.x < b.x)
+                                  {
+                                      return -1;
+                                  }
+
+                                  return 0;
+                              });
                 }
 
 		var removeables = []
