@@ -275,85 +275,50 @@ jsia = (function()
 
 	    jsia.lineDetection = function(imageData, minimumContrast, minimumLineLength, tolerance)
 	    {
-		var edges = jsia.detectEdgePixels(imageData, minimumContrast);
+		let edges = jsia.detectEdgePixels(imageData, minimumContrast);
 
-		var lines = [];
+		let points = getAllEdgePoints(edges);
 
-		var points = getAllEdgePoints(edges);
-		
-		points.sort((a, b) => { if (a.x < b.x) return 1; else if (a.x > b.x) return -1; else return 0;})
+		points.sort((a, b) =>
+                            {
+                                if (a.x < b.x)
+                                    return 1;
+                                else if (a.x > b.x)
+                                    return -1;
+                                else if (a.y < b.y)
+                                    return 1;
+                                else if(a.y > b.y)
+                                    return -1;
+                                else
+                                    return 0;
+                            });
 
-		var right = points[0];
-		var left = points[points.length - 1];
+                let lines = [];
 
-		points.sort((a, b) => { if (a.y < b.y) return 1; else if (a.y > b.y) return -1; else return 0;})
+                for(let point of points)
+                {
+                    let line;
+                    if(lines.length === 0)
+                    {
+                        line = [point];
+                        lines.push(line);
+                    }
+                    else
+                    {
+                        line = lines[lines.length-1];
+                        let lastPoint = line[line-1];
+                        if(euclideanDistance(point, lastPoint) <= 2)
+                        {
+                            line.push(point);
+                        }
+                        else
+                        {
+                            line = [point];
+                            lines.push(line);
+                        }
+                    }
+                }
 
-		var bottom = points[0];
-		var top = points[points.length - 1];
-
-		var tempCanvas = document.createElement('canvas');
-		tempCanvas.width = edges.width;
-		tempCanvas.height = edges.height;
-		var tempContext = tempCanvas.getContext('2d');
-		tempContext.putImageData(edges, 0, 0);		
-		
-		var areaOfInterest = tempContext.getImageData(left.x, top.y, right.x - left.x, bottom.y - top.y);
-
-		tempCanvas.width = areaOfInterest.width;
-		tempCanvas.height = areaOfInterest.height;
-
-		tempContext = tempCanvas.getContext('2d');
-
-		tempContext.putImageData(areaOfInterest, 0, 0);
-
-		var currentEnds = []
-		
-		for(let y = 0; y < areaOfInterest.height; y += minimumLineLength)
-		{
-		    for(let x = 0; x < areaOfInterest.width; x += minimumLineLength)
-		    {
-			let square = tempContext.getImageData(x, y, minimumLineLength, minimumLineLength);
-			let points = getAllEdgePoints(square);
-			points = points.map(function(p){ return { x: p.x + x, y: p.y + y }; });
-			if(points.length == 0)
-			    continue;
-			points.forEach(point =>
-			{
-			    let lineExtended = false;
-			    currentEnds.forEach(end =>
-			    {
-				let d = euclideanDistance(point, end.point);
-				if(d <= tolerance)
-				{
-				    lineExtended = true;
-				    lines[end.index].push(point);
-				    let changeEnd = false;
-				    if(point.x > end.point.x)
-				    {
-					changeEnd = true;
-				    }
-				    else if(point.x == end.point.x && point.y != end.point.y)
-				    {
-					changeEnd = true;
-				    }
-
-				    if(changeEnd)
-				    {
-					end.point = point;
-				    }
-				}
-			    });
-			    if(!lineExtended)
-			    {
-				lines.push([point]);
-				let newEnd = {point: point, index:lines.length-1};
-				currentEnds.push(newEnd);
-			    }
-			});
-		    }
-		}
-
-		// find all the lines that are too short and remove them
 		var removeables = []
 		
 		lines.forEach((line, index) =>
@@ -368,7 +333,7 @@ jsia = (function()
 
 		removeables.forEach(i => lines.splice(i, 1));
 
-		return lines;
+                return lines;
 	    };
 
 
