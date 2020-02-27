@@ -306,7 +306,7 @@ jsia = (function()
                     else
                     {
                         line = lines[lines.length-1];
-                        let lastPoint = line[line-1];
+                        let lastPoint = line[line.length-1];
                         if(euclideanDistance(point, lastPoint) <= 2)
                         {
                             line.push(point);
