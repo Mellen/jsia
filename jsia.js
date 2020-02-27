@@ -297,7 +297,7 @@ jsia = (function()
                             points.splice(pi, 1);
                         }
 
-                        closePoints = points.filter(point => closePoints.fliter(point2 => euclideanDistance(point2, point) <= 2).length > 0);
+                        closePoints = points.filter(point => closePoints.filter(point2 => euclideanDistance(point2, point) <= 2).length > 0);
                     }
 
                     console.log(line);
