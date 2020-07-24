@@ -302,26 +302,15 @@ jsia = (function()
                     
                     line.sort((a,b) =>
                               {
-                                  if(a.y > b.y)
+                                  let eucD = euclideanDistance(a, b);
+                                  if(eucD > 0)
                                   {
                                       return 1;
                                   }
-
-                                  if(a.y < b.y)
+                                  else if (eucD < 0)
                                   {
                                       return -1;
                                   }
-
-                                  if(a.x > b.x)
-                                  {
-                                      return 1;
-                                  }
-
-                                  if(a.x < b.x)
-                                  {
-                                      return -1;
-                                  }
-
                                   return 0;
                               });
                 }
